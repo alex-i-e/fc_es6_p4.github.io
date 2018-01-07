@@ -36,7 +36,7 @@ const config = {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 options: {
-                    presets: ['env'],
+                    presets: ['env', 'stage-2']
                 }
             },
             {
@@ -47,9 +47,9 @@ const config = {
                 use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
                     use: [
-                        { loader: 'css-loader', options: { importLoaders: 1 } },
-                        { loader: 'postcss-loader' },
-                        { loader: 'sass-loader' }
+                        {loader: 'css-loader', options: {importLoaders: 1}},
+                        {loader: 'postcss-loader'},
+                        {loader: 'sass-loader'}
                     ]
                 })
             },
@@ -61,9 +61,9 @@ const config = {
                 use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
                     use: [
-                        { loader: 'css-loader', options: { importLoaders: 1 } },
-                        { loader: 'postcss-loader' },
-                        { loader: 'sass-loader' }
+                        {loader: 'css-loader', options: {importLoaders: 1}},
+                        {loader: 'postcss-loader'},
+                        {loader: 'sass-loader'}
                     ]
                 })
             }
@@ -92,12 +92,12 @@ const config = {
 };
 
 isProd ? config.plugins
-    .push(new MinifyPlugin(require("babel-preset-minify"), {})): '';
+    .push(new MinifyPlugin(require("babel-preset-minify"), {})) : '';
 
 isProd ? config.plugins
     .push(new webpack.optimize.UglifyJsPlugin({
-    minimize: true,
-    compress: { warnings: false }
-})): '';
+        minimize: true,
+        compress: {warnings: false}
+    })) : '';
 
 module.exports = config;

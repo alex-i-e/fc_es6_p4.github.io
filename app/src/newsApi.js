@@ -191,8 +191,11 @@ export default class NewsApi {
             url += `&${cat}`;
         });
 
-        const data = await fetch( url, this.apiOptions).then(data => data.json());
-        return data.status === 'ok' ? data.sources : [];
+        if (Object.keys(prop)) {
+            const data = await fetch( url, this.apiOptions).then(data => data.json());
+            return data.status === 'ok' ? data.sources : [];
+        }
+        return [];
     }
 
     async getTopHeadlines (prop = {}) {
@@ -210,9 +213,12 @@ export default class NewsApi {
             url += `&${cat}`;
         });
 
-        const data = await fetch( url, this.apiOptions).then(data => data.json());
-        this.currentNews = data.articles || [];
-        return data.status === 'ok' ? data.articles : [];
+        if (Object.keys(prop).length) {
+            const data = await fetch( url, this.apiOptions).then(data => data.json());
+            this.currentNews = data.articles || [];
+            return data.status === 'ok' ? data.articles : [];
+        }
+        return [];
     }
 
     get apiKeyAttr () {
