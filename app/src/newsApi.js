@@ -1,5 +1,5 @@
-export default class NewsApi {
-    constructor () {
+class NewsApi {
+    constructor() {
         this.baseUrl = 'https://newsapi.org/v2/';
         this.apiType = {
             top: 'top-headlines',
@@ -164,64 +164,40 @@ export default class NewsApi {
         };
     }
 
-    get apiHeaders () {
+    get apiHeaders() {
         return new Headers();
     }
 
-    get apiOptions () {
-        return { method: 'GET',
+    get apiOptions() {
+        return {
+            method: 'GET',
             headers: this.apiHeaders,
             mode: 'cors',
             cache: 'default'
         };
     }
 
-    async getSources (prop = {}) {
-        let url = `${this.baseUrl}${this.apiType.source}?${this.apiKeyAttr}`;
-
-        Object.keys(prop).forEach((item) => {
-            let cat = 'category=';
-            switch (item) {
-                case 'category':
-                    cat += prop[item];
-                    break;
-                default:
-            }
-
-            url += `&${cat}`;
-        });
-
+    async getSources(prop = {}, url) {
         if (Object.keys(prop)) {
-            const data = await fetch( url, this.apiOptions).then(data => data.json());
+            const data = await fetch(url, this.apiOptions).then(data => data.json());
             return data.status === 'ok' ? data.sources : [];
         }
         return [];
     }
 
-    async getTopHeadlines (prop = {}) {
-        let url = `${this.baseUrl}${this.apiType.top}?${this.apiKeyAttr}`;
-
-        Object.keys(prop).forEach((item) => {
-            let cat = 'sources=';
-            switch (item) {
-                case 'sources':
-                    cat += Object.keys(prop[item]).join(',');
-                    break;
-                default:
-            }
-
-            url += `&${cat}`;
-        });
-
-        if (Object.keys(prop).length) {
-            const data = await fetch( url, this.apiOptions).then(data => data.json());
+    async getTopHeadlines(isDirty, url) {
+        if (isDirty) {
+            const data = await fetch(url, this.apiOptions).then(data => data.json());
             this.currentNews = data.articles || [];
             return data.status === 'ok' ? data.articles : [];
         }
         return [];
     }
 
-    get apiKeyAttr () {
+    get apiKeyAttr() {
         return `${this.config.sources.requestParamsObject.apiKey}=${this.apiKey}`;
     }
 }
+
+
+export default NewsApi;

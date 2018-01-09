@@ -1,51 +1,58 @@
+// Prototype
 function inherit(proto) {
-    function F() {}
+    function F() {
+    }
+
     F.prototype = proto;
     var object = new F;
     return object;
 }
 
-export default class Store {
-    // private subscribers; // : Function[];
-    // private reducers; // : { [key: string]: Function };
-    // private state; // : { [key: string]: any };
+function BaseStore(reducers = {}, initialState = {}) {
+    this._subscribers = [];
+    this._reducers = reducers;
+    this._state = this._reduce(initialState, {});
+}
 
-    constructor(reducers = {}, initialState = {}) {
-        this.subscribers = [];
-        this.reducers = reducers;
-        this.state = this.reduce(initialState, {});
-        this.prevState = this.state;
-    }
-
-    get value() {
-        return this.state;
-    }
-
-    get prevValue() {
-        return this.prevState;
-    }
-
+BaseStore.prototype = {
     subscribe(fn) {
-        this.subscribers = [...this.subscribers, fn];
+        this._subscribers = [...this._subscribers, fn];
         fn(this.value);
         return () => {
-            this.subscribers = this.subscribers.filter(sub => sub !== fn);
+            this._subscribers = this._subscribers.filter(sub => sub !== fn);
         };
-    }
-
+    },
     dispatch(action) {
-        this.state = this.reduce(this.state, action);
-        this.subscribers.forEach(fn => fn(this.value));
+        this._state = this._reduce(this._state, action);
+        this._subscribers.forEach(fn => fn(this.value));
 
-        this.prevState = this.state;
-    }
-
-    /*private */
-    reduce(state, action) {
+        this.prevState = this._state;
+    },
+    _reduce(state, action) {
         const newState = {};
-        for (const prop in this.reducers) {
-            newState[prop] = this.reducers[prop](state[prop], action);
+        for (const prop in this._reducers) {
+            newState[prop] = this._reducers[prop](state[prop], action);
         }
         return newState;
     }
+};
+Object.defineProperty(BaseStore.prototype, "value", {
+    get: function () {
+        return this._state;
+    }
+});
+
+function Store() {
+    BaseStore.apply(this, arguments);
+    this.prevState = this._state;
 }
+
+Store.prototype = inherit(BaseStore.prototype);
+Store.prototype.constructor = Store;
+Object.defineProperty(Store.prototype, "prevValue", {
+    get: function () {
+        return this.prevState;
+    }
+});
+
+export default Store;

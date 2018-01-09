@@ -1,13 +1,12 @@
-import Templates from './templateApi.js';
-import NewsApi from './newsApi.js';
+import {templateFactory} from './templateApi.js';
+import Memento from './mementoApi.js';
 
 import Store from './redux/redux_simple';
 import articleReducer from './reducers/articleReducer';
 import categoryReducer from './reducers/categoryReducer';
 import initState from './reducers/initState';
 
-const templateApi = new Templates();
-const newsApi = new NewsApi();
+const mementoApi = new Memento();
 
 const reducers = {
     category: categoryReducer,
@@ -19,18 +18,19 @@ const reduxStore = new Store(reducers, initState);
 const unsubscribe = reduxStore.subscribe((state) => {
     if (reduxStore.prevValue.category.data !== reduxStore.value.category.data) {
 
-        templateApi.addCategory(document.getElementsByClassName('settings')[0],
+        templateFactory.addElement('category',
+            document.getElementsByClassName('settings')[0],
             reduxStore.value.category.data,
             () => {
-                reduxStore.dispatch({type: 'SET_CATEGORY', payload: templateApi.getSelectorValue('category')});
+                reduxStore.dispatch({type: 'SET_CATEGORY', payload: templateFactory.getElemBySelector('category')});
             })
     }
     if (reduxStore.prevValue.category.category !== reduxStore.value.category.category) {
 
-        templateApi.cleanParentDomList(document.getElementsByClassName('headlines-container')[0]);
+        templateFactory.cleanDOM(document.getElementsByClassName('headlines-container')[0]);
 
-        newsApi.getSources({
-            category: templateApi.getSelectorValue('category')
+        mementoApi.feedSources({
+            category: templateFactory.getElemBySelector('category')
         }).then(data => {
 
             reduxStore.dispatch({type: 'SET_ARTICLE_FOUNDATION', payload: data});
@@ -40,10 +40,11 @@ const unsubscribe = reduxStore.subscribe((state) => {
     if (reduxStore.prevValue.article.data !== reduxStore.value.article.data) {
 
         const parentDom = document.getElementsByClassName('source-list')[0];
-        templateApi.cleanParentDomList(parentDom);
+        templateFactory.cleanDOM(parentDom);
 
         reduxStore.value.article.data.forEach((item) => {
-            templateApi.addCheckbox(parentDom,
+            templateFactory.addElement('checkbox',
+                parentDom,
                 item,
                 (e) => {
                     const sourcesCopy = {...reduxStore.value.article.sources};
@@ -62,19 +63,19 @@ const unsubscribe = reduxStore.subscribe((state) => {
     if (reduxStore.prevValue.article.sources !== reduxStore.value.article.sources) {
 
         const parentHeadlinesDom = document.getElementsByClassName('headlines-container')[0];
-        templateApi.cleanParentDomList(parentHeadlinesDom);
+        templateFactory.cleanDOM(parentHeadlinesDom);
 
-        newsApi.getTopHeadlines({
+        mementoApi.feedTopHeadlines({
             sources: reduxStore.value.article.sources
         }).then(data => {
             data.forEach((item) => {
-                templateApi.addArticle(parentHeadlinesDom, item, () => {
+                templateFactory.addElement('article', parentHeadlinesDom, item, () => {
                 })
             })
         });
     }
 });
 
-reduxStore.dispatch({type: 'GET_ALL_CATEGORY', payload: newsApi.category});
+reduxStore.dispatch({type: 'GET_ALL_CATEGORY', payload: mementoApi.newsApi.category});
 
 export default reduxStore;

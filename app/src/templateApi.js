@@ -1,5 +1,97 @@
-export default class Templates {
-    constructor () {
+// Constructor
+class TemplateConstructor {
+    constructor(tempHtml,
+                tempDOM) {
+        this.tempHtml = tempHtml;
+        this.tempDom = tempDOM;
+    }
+
+    setHtml(tempHtml) {
+        this.tempHtml = tempHtml;
+        return this;
+    }
+
+    setNode(type = 'div') {
+        this.tempDom = document.createElement(type);
+        return this;
+    }
+
+    setInnerHtml() {
+        this.tempDom.innerHTML = this.tempHtml;
+        return this;
+    }
+
+    toggleClass(newClass) {
+        this.tempDom.classList.toggle(newClass);
+        return this;
+    }
+
+    setEvent(type, callback) {
+        this.tempDom[type] = callback;
+        return this;
+    }
+
+    appendOnParent(parentElem) {
+        parentElem.appendChild(this.tempDom);
+        return this;
+    }
+}
+
+// Factory + Proxy-method + Facade-method
+class TemplateFactory {
+    constructor(templateProxy) {
+        this.templateProxy = templateProxy;
+        this.instance = new TemplateConstructor();
+    }
+
+    addElement(type, parentElem, data, eventCallback) {
+        switch ('' + type) {
+            case 'button':
+                this.instance.setHtml(this.templateProxy.template.settings.button(data))
+                    .setNode()
+                    .setInnerHtml()
+                    .setEvent('onclick', eventCallback)
+                    .appendOnParent(parentElem);
+                break;
+            case 'category':
+                this.instance.setHtml(this.templateProxy.template.settings['category-selector'](data))
+                    .setNode()
+                    .setInnerHtml()
+                    .toggleClass('article-headlines')
+                    .setEvent('onchange', eventCallback)
+                    .appendOnParent(parentElem);
+                break;
+            case 'checkbox':
+                this.instance.setHtml(this.templateProxy.template.settings.sourceList.checkbox(data))
+                    .setNode()
+                    .setInnerHtml()
+                    .setEvent('onclick', eventCallback)
+                    .appendOnParent(parentElem);
+                break;
+            case 'article':
+                this.instance.setHtml(this.templateProxy.template.articles.itemList(data))
+                    .setNode()
+                    .setInnerHtml()
+                    .setEvent('onclick', eventCallback)
+                    .appendOnParent(parentElem);
+                break;
+            default:
+        }
+    }
+
+    cleanDOM(parentDom) {
+        this.templateProxy.cleanParentDomList(parentDom);
+    }
+
+    getElemBySelector(selectName) {
+        const suffixClass = '-selector';
+        return this.templateProxy.getSelectorValue(selectName, suffixClass);
+    }
+}
+
+
+class Templates {
+    constructor() {
 
         this.template = {
             settings: {
@@ -61,67 +153,29 @@ export default class Templates {
 ${articleObject.title}</a>`;
 
 
-
                     return htmlTemplate;
                 },
-                itemDescription: () => {}
+                itemDescription: () => {
+                }
             }
         };
     }
 
-    init () {}
-
-    addButton (parentElem, btnName, onClickBtn) {
-        const tempHtml = this.template.settings.button(btnName);
-        const tempDom = document.createElement('div');
-        tempDom.innerHTML = tempHtml;
-
-        tempDom.onclick = onClickBtn;
-
-        parentElem.appendChild(tempDom);
-    }
-
-
-    addCategory (parentElem, list, onClickHandler) {
-        const catHtml = this.template.settings['category-selector'](list);
-        const catDom = document.createElement('div');
-        catDom.innerHTML = catHtml;
-        catDom.classList.add('article-headlines');
-
-        catDom.onchange = onClickHandler;
-
-        parentElem.appendChild(catDom);
-    }
-
-    addCheckbox (parentElem, cbObject, onClickHandler) {
-        const cbHtml = this.template.settings.sourceList.checkbox(cbObject);
-        const cbDom = document.createElement('div');
-        cbDom.innerHTML = cbHtml;
-
-        cbDom.onclick = onClickHandler;
-
-        parentElem.appendChild(cbDom);
-    }
-
-    addArticle(parentElem, articleObject, onClickHandler) {
-        const aHtml = this.template.articles.itemList(articleObject);
-        const aDom = document.createElement('div');
-        aDom.innerHTML = aHtml;
-
-        aDom.onclick = onClickHandler;
-
-        parentElem.appendChild(aDom);
-    }
-
-    cleanParentDomList (parentDom) {
+    cleanParentDomList(parentDom) {
         while (parentDom.firstChild) {
             parentDom.removeChild(parentDom.firstChild);
         }
     }
 
-    getSelectorValue (selectName) {
-        return document.getElementsByClassName(`${selectName}-selector`).length
-            ? document.getElementsByClassName(`${selectName}-selector`)[0].value
+    getSelectorValue(selectName, suffixClass) {
+        return document.getElementsByClassName(`${selectName}${suffixClass}`).length
+            ? document.getElementsByClassName(`${selectName}${suffixClass}`)[0].value
             : '';
     }
+}
+
+let templateFactory = new TemplateFactory(new Templates());
+
+export {
+    templateFactory
 }
