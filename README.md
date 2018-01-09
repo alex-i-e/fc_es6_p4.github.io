@@ -1,5 +1,5 @@
-# fc_es6_p3.github.io
-FrontCamp: ES6 [part3]
+# fc_es6_p4.github.io
+FrontCamp: ES6 [part4]
 
 0. For local build possible needed to set up the [node-gyp] + [node-sass]
 
